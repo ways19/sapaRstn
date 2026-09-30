@@ -92,9 +92,19 @@
                 <h4 class="text-sm sm:text-base font-bold text-gray-900 group-hover:text-violet-700 transition-colors leading-tight break-words">
                   {{ item.pemeriksaan || item.pemeriksaanOrder || 'Pemeriksaan Radiologi' }}
                 </h4>
-                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 inline-flex items-center gap-1 shrink-0">
+                <span
+                  v-if="Number(item.finalStatus) === 2"
+                  class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 inline-flex items-center gap-1 shrink-0"
+                >
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   <span>Hasil Selesai</span>
+                </span>
+                <span
+                  v-else
+                  class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 inline-flex items-center gap-1 shrink-0"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span>Dalam Proses</span>
                 </span>
               </div>
 
@@ -112,43 +122,58 @@
             </div>
           </div>
 
-          <!-- Right: Action Buttons -->
+          <!-- Right: Action Buttons / Status Message -->
           <div class="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-            <!-- Tombol Foto Radiologi (Fullscreen Viewer) -->
-            <button
-              type="button"
-              @click="openGambarModal(item)"
-              class="px-3.5 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold text-xs border border-violet-200/80 hover:border-violet-300 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-sm"
-            >
-              <svg class="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-              </svg>
-              <span>Foto Radiologi</span>
-            </button>
+            <!-- Jika finalStatus === 2: Tampilkan Tombol Foto & Hasil -->
+            <template v-if="Number(item.finalStatus) === 2">
+              <!-- Tombol Foto Radiologi (Fullscreen Viewer) -->
+              <button
+                type="button"
+                @click="openGambarModal(item)"
+                class="px-3.5 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold text-xs border border-violet-200/80 hover:border-violet-300 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-sm"
+              >
+                <svg class="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Foto Radiologi</span>
+              </button>
 
-            <!-- Tombol Hasil (Fullscreen Canvas PDF Preview / iOS Direct Download) -->
-            <button
-              type="button"
-              @click="handleDocAction(item)"
-              :disabled="downloadingDocId === (item.id || item.ID || item.acsn || item.ACSN || item.noKunjungan || item.NOKUNJUNGAN)"
-              class="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-violet-600/20 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              <!-- Tombol Hasil (Fullscreen Canvas PDF Preview / iOS Direct Download) -->
+              <button
+                type="button"
+                @click="handleDocAction(item)"
+                :disabled="downloadingDocId === (item.id || item.ID || item.acsn || item.ACSN || item.noKunjungan || item.NOKUNJUNGAN)"
+                class="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-violet-600/20 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              >
+                <svg v-if="downloadingDocId === (item.id || item.ID || item.acsn || item.ACSN || item.noKunjungan || item.NOKUNJUNGAN)" class="w-4 h-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/>
+                  <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"/>
+                </svg>
+                <svg v-else-if="isIOS" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <span>{{ downloadingDocId === (item.id || item.ID || item.acsn || item.ACSN || item.noKunjungan || item.NOKUNJUNGAN) ? 'Mengunduh...' : (isIOS ? 'Unduh Hasil' : 'Hasil') }}</span>
+              </button>
+            </template>
+
+            <!-- Jika finalStatus != 2: Tampilkan pesan Hasil Radiologi Sedang dalam proses -->
+            <div
+              v-else
+              class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-amber-800 text-xs font-semibold shadow-xs"
             >
-              <svg v-if="downloadingDocId === (item.id || item.ID || item.acsn || item.ACSN || item.noKunjungan || item.NOKUNJUNGAN)" class="w-4 h-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/>
-                <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"/>
-              </svg>
-              <svg v-else-if="isIOS" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-              </svg>
-              <span>{{ downloadingDocId === (item.id || item.ID || item.acsn || item.ACSN || item.noKunjungan || item.NOKUNJUNGAN) ? 'Mengunduh...' : (isIOS ? 'Unduh Hasil' : 'Hasil') }}</span>
-            </button>
+              <span class="relative flex h-2 w-2 shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span>Hasil Radiologi Sedang dalam proses</span>
+            </div>
           </div>
         </div>
       </div>
