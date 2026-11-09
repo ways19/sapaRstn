@@ -4,7 +4,36 @@ Aplikasi Portal Layanan Pasien Digital Resmi **RSUD R.A.A. Tjokronegoro Purworej
 
 ---
 
-## 🚀 Fitur Versi 1.1.1-20260826 *(Versi Terbaru)*
+## 🚀 Fitur Versi 1.2.0-20261109 *(Versi Terbaru)*
+
+Pembaruan versi 1.2.0-20261109 menghadirkan penyempurnaan besar pada pengalaman pengguna (UX) modul reservasi rawat jalan, integrasi cerdas BPJS Kesehatan Mobile JKN, standarisasi kebijakan operasional pendaftaran 7 hari, serta dukungan Tanda Tangan Elektronik (TTE) pasien:
+
+### 1. 🌿 Redesain Riwayat Reservasi (1-Card Layout) & Integrasi BPJS Kesehatan
+- **1-Card Banner Terpadu**: Menggabungkan header judul riwayat reservasi dan modul integrasi BPJS Kesehatan menjadi satu kartu banner yang kompak, bersih, dan elegan dengan identitas gradasi hijau zamrud resmi BPJS Kesehatan (`from-emerald-800 via-teal-800 to-emerald-900`).
+- **Deteksi Otomatis Perangkat (Smart Device Detection)**: Tombol *"Buka Mobile JKN"* secara otomatis mendeteksi sistem operasi pengguna. Pengguna **iOS (iPhone/iPad)** diarahkan ke **Apple App Store**, sedangkan pengguna **Android** diarahkan ke **Google Play Store**.
+- **Nomor Antrean Bersih & Simetris**: Menghilangkan teks kecil berdesakan di bawah nomor antrean, menjadikan bentuk squircle antrean 1:1 lebih rapi dan nyaman dibaca.
+- **Estimasi Jam Pelayanan di Detail Tiket**: Informasi jam estimasi pelayanan pasien (`09:50 WIB` / rentang jam praktik) kini disajikan lengkap dan resmi pada modal detail tiket Bukti Pendaftaran Rawat Jalan.
+- **Pembaruan Edukasi Masa Aktif Rujukan BPJS**: Pembaruan redaksi panduan rujukan: *"Pastikan surat rujukan dari Puskesmas/Klinik Anda masih berstatus aktif (berlaku maksimal 90 hari) sebelum berobat."*
+
+### 2. 🎯 Pengurutan Multi-Tier Cerdas Kartu Reservasi
+- **Tier 0 (Layanan Hari H)**: Kunjungan pelayanan hari ini selalu ditempatkan di posisi **paling atas** untuk kemudahan akses saat pasien berada di rumah sakit.
+- **Tier 1 (Jadwal Mendatang)**: Kunjungan di masa mendatang diurutkan secara **Ascending** (tanggal terdekat lebih dulu).
+- **Tier 2 (Riwayat Selesai/Terlewat)**: Kunjungan masa lalu otomatis dikelompokkan di bagian bawah secara **Descending** (tanggal terbaru lebih dulu).
+
+### 3. 📅 Penyesuaian Kuota & Batas Waktu Reservasi Online (Kebijakan 7 Hari)
+- Penyesuaian batas maksimal pemilihan tanggal pendaftaran online dari semula 30 hari kalender menjadi **maksimal 7 hari ke depan** sesuai kebijakan operasional pelayanan dan akurasi jadwal dokter RSUD R.A.A. Tjokronegoro.
+
+### 4. ✍️ Dukungan Tanda Tangan Elektronik (TTE) & Geolocation Pasien
+- Integrasi formulir persetujuan umum (*General Consent*) pasien dengan tanda tangan digital canvas interaktif.
+- Perekaman koordinat lokasi GPS (*Geolocation Permission*) pada saat penandatanganan dokumen guna memperkuat validitas dan otentisitas rekam medis digital.
+
+### 5. 🧪 Kualitas Kode & Pengujian Otomatis
+- **100% Unit Test Passed**: 140 pengujian otomatis lulus dengan Vitest (`npm run test:run`).
+- **Optimalisasi PWA Build**: Kompilasi Vite production selesai di bawah 2 detik dengan Service Worker PWA terdaftar sempurna.
+
+---
+
+## 📦 Fitur Versi 1.1.1-20260826
 
 Pembaruan versi 1.1.1-20260826 berfokus pada kompatibilitas penuh perangkat iOS/iPhone, akurasi tiket pendaftaran, penyempurnaan alur reservasi, dan performa:
 
