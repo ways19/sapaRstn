@@ -44,6 +44,12 @@ const routes = [
         meta: { title: 'Edukasi Kesehatan', requiresAuth: false }
       },
       {
+        path: 'edukasi/artikel/:id',
+        name: 'EdukasiDetail',
+        component: () => import('../views/EdukasiDetailView.vue'),
+        meta: { title: 'Detail Artikel Edukasi', requiresAuth: false }
+      },
+      {
         path: 'daftar-online',
         name: 'DaftarOnline',
         component: () => import('../views/DaftarOnlineView.vue'),
@@ -80,6 +86,12 @@ const routes = [
         meta: { title: 'Resume Medis Rawat Inap', requiresAuth: true }
       },
       {
+        path: 'tagihan-umum',
+        name: 'TagihanPasienUmum',
+        component: () => import('../views/TagihanPasienUmumView.vue'),
+        meta: { title: 'Tagihan Pasien', requiresAuth: true }
+      },
+      {
         path: 'preview-dokumen/:type/:id',
         name: 'PreviewDokumen',
         component: () => import('../views/PreviewDokumenView.vue'),
@@ -90,6 +102,12 @@ const routes = [
         name: 'Profile',
         component: () => import('../views/ProfileView.vue'),
         meta: { title: 'Profil', requiresAuth: true }
+      },
+      {
+        path: 'notifikasi',
+        name: 'NotifikasiSemua',
+        component: () => import('../views/NotifikasiView.vue'),
+        meta: { title: 'Semua Notifikasi', requiresAuth: false }
       }
     ]
   },

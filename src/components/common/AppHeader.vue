@@ -33,16 +33,28 @@
 
       <!-- Right side -->
       <div class="flex items-center gap-2">
-        <template v-if="authStore.isAuthenticated">
-          <!-- Notification bell -->
-          <button class="relative p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-500">
+        <!-- Notification bell -->
+        <div ref="notifContainer" class="relative">
+          <button 
+            @click="handleNotifClick"
+            class="relative p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-500 cursor-pointer"
+            :title="isMobile ? 'Lihat Semua Notifikasi' : 'Notifikasi'"
+          >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
-            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+            <span v-if="notificationStore.totalUnreadCount > 0" class="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-bold text-white">
+              {{ notificationStore.totalUnreadCount > 9 ? '9+' : notificationStore.totalUnreadCount }}
+            </span>
           </button>
+          <NotificationDropdown v-if="!isMobile && showNotifPanel" @close="showNotifPanel = false" />
+          <!-- Modal rincian notifikasi: dirender selalu (v-if dikelola store),
+               sejajar dengan dropdown agar tidak ikut ter-unmount saat panel ditutup. -->
+          <NotificationDetailModal />
+        </div>
 
+        <template v-if="authStore.isAuthenticated">
           <!-- Profile -->
           <button
             class="flex items-center gap-2 py-1.5 px-2 sm:px-3 rounded-xl hover:bg-gray-100 transition-colors"
@@ -80,15 +92,79 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import { useNotificationStore } from '../../stores/notification'
 import { useResponsive } from '../../composables/useResponsive'
+import NotificationDropdown from './NotificationDropdown.vue'
+import NotificationDetailModal from './NotificationDetailModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 const { isMobile } = useResponsive()
+
+const notifContainer = ref(null)
+const showNotifPanel = ref(false)
+
+function handleNotifClick() {
+  if (isMobile.value) {
+    showNotifPanel.value = false
+    if (route.name !== 'NotifikasiSemua') {
+      router.push({ name: 'NotifikasiSemua' })
+    }
+    return
+  }
+  toggleNotifPanel()
+}
+
+function toggleNotifPanel() {
+  showNotifPanel.value = !showNotifPanel.value
+  if (showNotifPanel.value) {
+    if (authStore.isAuthenticated) {
+      notificationStore.fetchNotifications(false) // refresh data di background saat dropdown dibuka
+    }
+    notificationStore.fetchBlastNotifications()
+  }
+}
+
+watch(isMobile, (mobile) => {
+  if (mobile) {
+    showNotifPanel.value = false
+  }
+})
+
+function handleClickOutside(event) {
+  if (showNotifPanel.value && notifContainer.value && !notifContainer.value.contains(event.target)) {
+    showNotifPanel.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('click', handleClickOutside)
+  if (authStore.isAuthenticated) {
+    notificationStore.fetchNotifications()
+    notificationStore.startPolling(30000) // Polling setiap 30 detik
+  }
+  // Selalu muat pengumuman agar pengguna umum bisa melihat badge notifikasi
+  notificationStore.fetchBlastNotifications()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside)
+  notificationStore.stopPolling()
+})
+
+watch(() => authStore.isAuthenticated, (newVal) => {
+  if (newVal) {
+    notificationStore.fetchNotifications()
+    notificationStore.startPolling(30000)
+  } else {
+    notificationStore.stopPolling()
+  }
+})
 
 const currentTitle = computed(() => route.meta.title || 'Dashboard')
 

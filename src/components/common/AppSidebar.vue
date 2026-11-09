@@ -167,6 +167,11 @@ const menuItems = [
     iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M16 13H8', 'M16 17H8'])
   },
   {
+    to: '/tagihan-umum',
+    label: 'Tagihan Pasien',
+    iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M9 15h6', 'M12 12v6'])
+  },
+  {
     to: '/profil',
     label: 'Profil Saya',
     iconComponent: createIcon(['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'])
