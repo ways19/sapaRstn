@@ -13,7 +13,7 @@
           </div>
           <div class="min-w-0 space-y-0.5">
             <h2 class="text-sm sm:text-lg md:text-xl font-black text-white tracking-tight leading-snug">Tagihan Pasien</h2>
-            <p class="text-[11px] sm:text-xs text-orange-200/90 font-medium truncate">Riwayat tagihan &amp; pembayaran rawat jalan</p>
+            <p class="text-[11px] sm:text-xs text-orange-200/90 font-medium truncate">Riwayat tagihan dan Pembayaran Jaminan UMUM</p>
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">

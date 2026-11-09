@@ -9,7 +9,7 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Pendaftaran Rawat Jalan Online</h2>
         <p class="text-emerald-100/90 text-xs sm:text-sm max-w-xl leading-relaxed">
-          Reservasi antrian poliklinik spesialis RSUD R.A.A. Tjokronegoro. Pendaftaran dapat dilakukan maksimal 30 hari ke depan.
+          Reservasi antrian poliklinik spesialis RSUD R.A.A. Tjokronegoro. Pendaftaran dapat dilakukan maksimal 7 hari ke depan.
         </p>
       </div>
     </div>
@@ -135,7 +135,7 @@
           </div>
           <div>
             <h3 class="text-base font-bold text-gray-800">Pilih Tanggal Rencana Kunjungan</h3>
-            <p class="text-xs text-gray-400">Pendaftaran dapat dipilih maksimal 30 hari ke depan</p>
+            <p class="text-xs text-gray-400">Pendaftaran dapat dipilih maksimal 7 hari ke depan</p>
           </div>
         </div>
 
@@ -440,7 +440,7 @@ import BookingBarcode from '../components/common/BookingBarcode.vue'
 const authStore = useAuthStore()
 const route = useRoute()
 
-// Dates Calculation: Today or Tomorrow (if past 9 AM) up to 30 days ahead
+// Dates Calculation: Today or Tomorrow (if past 9 AM) up to 7 days ahead
 const now = new Date()
 const formatDate = (d) => {
   const year = d.getFullYear()
@@ -457,7 +457,7 @@ if (now.getHours() >= 9) {
 
 const minDate = formatDate(defaultStartDate)
 const maxDateObj = new Date(now)
-maxDateObj.setDate(now.getDate() + 29)
+maxDateObj.setDate(now.getDate() + 7)
 const maxDate = formatDate(maxDateObj)
 
 // Inisialisasi tanggal: utamakan dari query parameter jika ada (kecuali jika hari ini dan sudah lewat jam 9)
@@ -560,7 +560,7 @@ const tglError = computed(() => {
 
   // Maximum date check
   if (form.tglKunjungan > maxDate) {
-    return `Tanggal kunjungan melebihi batas maksimal 30 hari (maksimal ${formatTglIndo(maxDate)}).`
+    return `Tanggal kunjungan melebihi batas maksimal 7 hari (maksimal ${formatTglIndo(maxDate)}).`
   }
 
   return null
