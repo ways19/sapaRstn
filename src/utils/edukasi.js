@@ -2,18 +2,24 @@
  * Utilitas bersama untuk fitur Edukasi Kesehatan.
  */
 
-// URL gambar sudah diverifikasi: /gos2_plus/uploads/edukasi/ → HTTP 200 ✓
-// /gos2_plus/web/rsudapi/uploads/edukasi/ → HTTP 404 ✗ (salah)
-// /gos2_plus/web/uploads/edukasi/         → HTTP 200 ✓ (alternatif valid)
-export const EDUKASI_IMG_BASE = 'http://194.169.46.193/gos2_plus/uploads/edukasi/'
+// Gunakan domain HTTPS publik (selaras dengan VITE_API_BASE_URL) agar tidak terblokir Mixed Content di browser/PWA
+export const EDUKASI_IMG_BASE =
+  import.meta.env.VITE_EDUKASI_IMG_BASE ||
+  'https://apirstjokro.purworejokab.go.id/gos2_plus/uploads/edukasi/'
 
 /**
  * Menghasilkan URL lengkap gambar edukasi dari nama file.
- * @param {string|null|undefined} nama - Nama file gambar (mis. "edukasi_xxx.jpg")
+ * @param {string|null|undefined} nama - Nama file gambar (mis. "edukasi_xxx.jpg") atau URL penuh
  * @returns {string} URL lengkap atau string kosong jika nama tidak ada
  */
 export function edukasiImgUrl(nama) {
-  return nama ? EDUKASI_IMG_BASE + nama : ''
+  if (!nama) return ''
+  const raw = String(nama).trim()
+  if (!raw) return ''
+  if (/^https?:\/\//i.test(raw)) {
+    return raw.replace(/^http:\/\/194\.169\.46\.193/i, 'https://apirstjokro.purworejokab.go.id')
+  }
+  return EDUKASI_IMG_BASE + raw.replace(/^\/+/, '')
 }
 
 /**

@@ -214,9 +214,10 @@
       </div>
 
       <!-- Footer -->
-      <p class="text-center text-gray-400 text-xs mt-6">
-        &copy; {{ new Date().getFullYear() }} RSUD R.A.A. Tjokronegoro • Purworejo
-      </p>
+      <div class="text-center text-gray-400 text-xs mt-6 space-y-1">
+        <p>&copy; {{ new Date().getFullYear() }} RSUD R.A.A. Tjokronegoro • Purworejo</p>
+        <p class="text-[11px] font-medium text-gray-400/90">SAPA RSTN v{{ appVersion }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -226,6 +227,7 @@ import { ref, reactive, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.2.1-20261112'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()

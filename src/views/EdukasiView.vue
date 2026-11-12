@@ -135,7 +135,10 @@
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
               @error="onImgError($event)"
             />
-            <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-200">
+            <div
+              class="img-fallback w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-200"
+              :style="item.imgUrl ? 'display:none' : ''"
+            >
               <svg class="w-16 h-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/><path d="M6 14h6"/></svg>
             </div>
             <!-- Counter dilihat (dari field counter di list API) -->
@@ -490,6 +493,11 @@ function resetSearch() {
 function onImgError(event) {
   event.target.removeAttribute('src')
   event.target.style.display = 'none'
+  const parent = event.target.parentElement
+  if (parent) {
+    const fallback = parent.querySelector('.img-fallback')
+    if (fallback) fallback.style.display = 'flex'
+  }
 }
 
 function openArtikel(item) {

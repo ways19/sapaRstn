@@ -1,7 +1,7 @@
 {
   "name": "sapa_rstn",
   "private": true,
-  "version": "1.2.0-20261109",
+  "version": "1.2.1-20261112",
   "type": "module",
   "scripts": {
     "dev": "vite",

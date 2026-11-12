@@ -138,5 +138,26 @@ router.beforeEach((to, from, next) => {
   }
 })
 
+// Tangani kegagalan muat chunk JS lama setelah deploy versi baru di PWA
+router.onError((error, to) => {
+  const message = error?.message || ''
+  const isChunkError =
+    /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError|error loading dynamically imported module/i.test(
+      message
+    )
+  if (!isChunkError) return
+
+  const key = 'sapa_rstn_chunk_reload'
+  const now = Date.now()
+  try {
+    const prev = JSON.parse(sessionStorage.getItem(key) || 'null')
+    if (prev && prev.path === to.fullPath && now - prev.at < 30000) return
+    sessionStorage.setItem(key, JSON.stringify({ path: to.fullPath, at: now }))
+  } catch {
+    // Abaikan jika sessionStorage tidak tersedia
+  }
+  window.location.assign(to.fullPath)
+})
+
 export default router
 

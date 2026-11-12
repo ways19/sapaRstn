@@ -1,15 +1,37 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'))
+const buildId = Date.now().toString()
+
+function versionManifestPlugin() {
+  return {
+    name: 'version-manifest',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: JSON.stringify({ version: pkg.version, buildId })
+      })
+    }
+  }
+}
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_BUILD_ID__: JSON.stringify(buildId)
+  },
   esbuild: {
     drop: ['console', 'debugger']
   },
   plugins: [
     vue(),
     tailwindcss(),
+    versionManifestPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
@@ -47,6 +69,10 @@ export default defineConfig({
         ]
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        navigateFallbackDenylist: [/^\/api/, /^\/version\.json/],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

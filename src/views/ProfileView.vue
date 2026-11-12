@@ -152,16 +152,6 @@
         </div>
         <svg class="w-4 h-4 text-gray-300 group-hover:text-emerald-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </router-link>
-
-      <div class="flex items-center gap-4 px-6 py-4.5">
-        <div class="w-10 h-10 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center shrink-0">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        </div>
-        <div class="flex-1">
-          <p class="text-sm font-bold text-gray-800">SAPA RSTN v1.2.0-20261109</p>
-          <p class="text-xs text-gray-400">RSUD R.A.A. Tjokronegoro Purworejo</p>
-        </div>
-      </div>
     </div>
 
     <!-- Logout Button -->

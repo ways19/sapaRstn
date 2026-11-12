@@ -6,6 +6,13 @@
 </IfModule>
 
 <IfModule mod_headers.c>
+  # Pastikan service worker, HTML shell, manifest, dan version check tidak pernah di-cache HTTP browser
+  <FilesMatch "^(index\.html|sw\.js|registerSW\.js|workbox-.*\.js|manifest\.webmanifest|version\.json)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+
   # Izinkan CORS untuk worker dan font
   <FilesMatch "\.(mjs|js|wasm|woff2|woff|ttf|svg|png|jpg|jpeg|gif|ico)$">
     Header set Access-Control-Allow-Origin "*"
