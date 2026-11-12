@@ -5,11 +5,11 @@
       <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
       <div class="relative z-10 space-y-1.5">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-semibold backdrop-blur-md">
-          <span>💊 Farmasi RSUD R.A.A. Tjokronegoro</span>
+          <span>💊 Apotek RSUD R.A.A. Tjokronegoro</span>
         </div>
-        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Cek Antrian Farmasi</h2>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Cek Antrean Apotek</h2>
         <p class="text-teal-100/90 text-xs sm:text-sm max-w-md">
-          Pantau status antrian penyiapan dan penyerahan resep obat Anda secara real-time.
+          Pantau status antrean penyiapan dan penyerahan resep obat Anda secara otomatis &amp; berkala.
         </p>
       </div>
     </div>
@@ -68,7 +68,7 @@
           <svg class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
         <div>
-          <p class="text-xs text-gray-400">No. Rekam Medis</p>
+          <p class="text-xs text-gray-400">No. Rekam Medis • Auto-cek tiap 15 dtk</p>
           <p class="text-sm font-bold text-gray-800">RM {{ authStore.userName }}</p>
         </div>
       </div>
@@ -261,11 +261,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
 
+const AUTO_POLL_MS = 15000
 const authStore = useAuthStore()
 
 const normInput = ref('')
@@ -274,6 +274,7 @@ const errorMsg = ref(null)
 const antrianData = ref(null)
 const waitingMessage = ref(null)
 const hasSearched = ref(false)
+let pollTimer = null
 
 function getLoketName(loket) {
   if (!loket) return '-'
@@ -319,14 +320,14 @@ const statusIconClass = computed(() => {
   }
 })
 
-async function fetchAntrian() {
+async function fetchAntrian(showLoading = true) {
   const norm = authStore.isAuthenticated ? authStore.userName : normInput.value.trim()
   if (!norm) return
 
-  loading.value = true
-  errorMsg.value = null
-  antrianData.value = null
-  waitingMessage.value = null
+  if (showLoading) {
+    loading.value = true
+    errorMsg.value = null
+  }
   hasSearched.value = true
 
   try {
@@ -334,26 +335,79 @@ async function fetchAntrian() {
     const res = response.data
 
     if (res.code === '200') {
+      errorMsg.value = null
       // Check if pharmacy has received the prescription
       if (res.data && res.data.loket && res.data.nomor) {
         antrianData.value = res.data
+        waitingMessage.value = null
       } else {
-        waitingMessage.value = res.message || 'Farmasi belum menerima resep Anda.'
+        antrianData.value = null
+        waitingMessage.value = res.message || 'Apotek belum menerima resep Anda.'
       }
-    } else {
-      errorMsg.value = res.message || 'Gagal memuat data antrian farmasi.'
+    } else if (showLoading) {
+      antrianData.value = null
+      waitingMessage.value = null
+      errorMsg.value = res.message || 'Gagal memuat data antrean apotek.'
     }
   } catch (err) {
-    errorMsg.value = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.'
-    console.error('Antrian farmasi error:', err)
+    if (showLoading) {
+      antrianData.value = null
+      waitingMessage.value = null
+      errorMsg.value = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.'
+    }
+    console.error('Antrean apotek error:', err)
   } finally {
-    loading.value = false
+    if (showLoading) {
+      loading.value = false
+    }
   }
 }
 
-onMounted(() => {
-  if (authStore.isAuthenticated) {
-    fetchAntrian()
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
   }
+}
+
+function startPolling() {
+  stopPolling()
+  if (!authStore.isAuthenticated) return
+  pollTimer = setInterval(() => {
+    if (authStore.isAuthenticated && document.visibilityState === 'visible') {
+      fetchAntrian(false)
+    }
+  }, AUTO_POLL_MS)
+}
+
+function onVisibilityChange() {
+  if (authStore.isAuthenticated && document.visibilityState === 'visible') {
+    fetchAntrian(false)
+  }
+}
+
+watch(
+  () => authStore.isAuthenticated,
+  (loggedIn) => {
+    if (loggedIn) {
+      fetchAntrian(true)
+      startPolling()
+    } else {
+      stopPolling()
+    }
+  }
+)
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  if (authStore.isAuthenticated) {
+    fetchAntrian(true)
+    startPolling()
+  }
+})
+
+onUnmounted(() => {
+  stopPolling()
+  document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 </script>

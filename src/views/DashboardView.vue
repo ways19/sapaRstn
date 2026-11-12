@@ -118,7 +118,7 @@
         </div>
         <h3 class="text-base sm:text-lg font-bold">Ingin Melakukan Pendaftaran Online & Cek Antrian?</h3>
         <p class="text-xs text-gray-300 max-w-lg leading-relaxed">
-          Masuk dengan Nomor Rekam Medis & Tanggal Lahir untuk mengakses Pendaftaran Poli, Riwayat Reservasi, Antrian Farmasi, dan Hasil Radiologi.
+          Masuk dengan Nomor Rekam Medis & Tanggal Lahir untuk mengakses Pendaftaran Poli, Riwayat Reservasi, Antrean Apotek, dan Hasil Radiologi.
         </p>
       </div>
       <router-link
@@ -134,59 +134,204 @@
     <div v-if="authStore.isAuthenticated" class="grid md:grid-cols-2 gap-5 sm:gap-6">
       <!-- Status Card -->
       <div class="p-5 sm:p-7 border border-gray-100/90 rounded-2xl shadow-sm bg-white flex flex-col gap-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-3 min-w-0">
             <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
             </div>
-            <div>
+            <div class="min-w-0">
               <h3 class="font-bold text-gray-800 text-sm sm:text-base">Status Antrian Hari Ini</h3>
-              <p class="text-[11px] text-gray-400">Informasi antrian poliklinik & farmasi</p>
+              <p class="text-[11px] text-gray-400 truncate">Informasi antrian poliklinik &amp; apotek</p>
             </div>
           </div>
-          <router-link to="/antrian-farmasi" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
-            Cek Antrian &rarr;
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              @click="fetchDashboardSummary(true)"
+              :disabled="loadingSummary"
+              class="w-7 h-7 rounded-lg bg-gray-50 hover:bg-emerald-50 text-gray-400 hover:text-emerald-600 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
+              title="Muat ulang status antrian"
+            >
+              <svg class="w-3.5 h-3.5" :class="loadingSummary ? 'animate-spin text-emerald-600' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            </button>
+            <router-link to="/antrian-farmasi" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+              Cek Antrian &rarr;
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div v-if="loadingSummary && !antrianFarmasi && todayPoliQueues.length === 0" class="bg-gray-50/80 border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-gray-400">
+          <svg class="w-6 h-6 animate-spin text-emerald-600" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"/></svg>
+          <span class="text-xs font-medium">Memuat status antrian...</span>
+        </div>
+
+        <!-- Active Queue List (Farmasi + Poli Hari Ini) -->
+        <div v-else-if="antrianFarmasi || todayPoliQueues.length > 0" class="space-y-3">
+          <!-- Antrian Farmasi Aktif -->
+          <router-link
+            v-if="antrianFarmasi"
+            to="/antrian-farmasi"
+            class="block rounded-xl p-4 bg-gradient-to-br from-teal-50/90 to-emerald-50/60 border border-teal-100 hover:border-teal-300 transition-all group"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="space-y-1 min-w-0">
+                <span class="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-teal-700">
+                  <span class="w-2 h-2 rounded-full" :class="farmasiStatusMeta.dotClass"></span>
+                  Antrean Apotek
+                </span>
+                <p class="text-2xl font-black text-teal-800 tracking-tight leading-none">
+                  {{ antrianFarmasi.loket }}-{{ antrianFarmasi.nomor }}
+                </p>
+                <p class="text-xs font-medium text-teal-700/90">
+                  {{ getLoketLabel(antrianFarmasi.loket) }}
+                </p>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 shrink-0">
+                <span
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-bold border"
+                  :class="farmasiStatusMeta.badgeClass"
+                >
+                  {{ farmasiStatusMeta.label }}
+                </span>
+                <span class="text-[11px] text-gray-500 font-medium">
+                  Panggilan: <strong class="text-gray-700">{{ antrianFarmasi.panggilanTerakhir || '-' }}</strong>
+                </span>
+              </div>
+            </div>
+          </router-link>
+
+          <!-- Antrian Poliklinik Hari Ini -->
+          <router-link
+            v-for="item in todayPoliQueues.slice(0, 2)"
+            :key="item.kodeBooking"
+            to="/riwayat-reservasi"
+            class="block rounded-xl p-3.5 bg-blue-50/50 border border-blue-100 hover:border-blue-300 transition-all"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex flex-col items-center justify-center shrink-0 shadow-xs">
+                  <span class="text-[9px] font-semibold uppercase opacity-80 leading-none">Antrian</span>
+                  <span class="text-base font-black leading-tight mt-0.5">{{ item.NOMOR_ANTRIAN || '-' }}</span>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-700">Poliklinik Hari Ini</span>
+                    <span v-if="item.isBpjs" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[9px] font-bold">BPJS</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-bold text-gray-800 truncate">{{ item.namaPoli }}</p>
+                  <p class="text-[11px] text-gray-500 truncate">{{ item.namaDokter }}</p>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="inline-block px-2 py-0.5 rounded-md bg-white border border-blue-100 text-[11px] font-bold text-blue-700 font-mono">
+                  {{ item.ESTIMASI_PELAYANAN ? formatJamEstimasi(item.ESTIMASI_PELAYANAN) + ' WIB' : (item.JAM_PRAKTEK || '-') }}
+                </span>
+                <p class="text-[10px] text-gray-400 mt-1 font-mono">{{ item.kodeBooking }}</p>
+              </div>
+            </div>
           </router-link>
         </div>
-        <div class="bg-gray-50/80 border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2">
+
+        <!-- Empty State -->
+        <div v-else class="bg-gray-50/80 border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2">
           <div class="w-10 h-10 rounded-full bg-gray-200/60 flex items-center justify-center text-gray-400">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/>
             </svg>
           </div>
           <p class="text-gray-600 font-semibold text-xs sm:text-sm">Tidak ada antrian aktif saat ini</p>
-          <p class="text-gray-400 text-[11px]">Daftar pemeriksaan untuk mendapatkan nomor antrian</p>
+          <p class="text-gray-400 text-[11px]">
+            {{ farmasiWaitingMsg || 'Daftar pemeriksaan untuk mendapatkan nomor antrian' }}
+          </p>
         </div>
       </div>
 
       <!-- Jadwal Card -->
       <div class="p-5 sm:p-7 border border-gray-100/90 rounded-2xl shadow-sm bg-white flex flex-col gap-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-3 min-w-0">
             <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
             </div>
-            <div>
+            <div class="min-w-0">
               <h3 class="font-bold text-gray-800 text-sm sm:text-base">Jadwal Reservasi</h3>
-              <p class="text-[11px] text-gray-400">Kunjungan atau kontrol dokter berikutnya</p>
+              <p class="text-[11px] text-gray-400 truncate">Kunjungan atau kontrol dokter berikutnya</p>
             </div>
           </div>
-          <router-link to="/riwayat-reservasi" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+          <router-link to="/riwayat-reservasi" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 shrink-0">
             Lihat Semua &rarr;
           </router-link>
         </div>
-        <div class="bg-gray-50/80 border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2">
+
+        <!-- Loading State -->
+        <div v-if="loadingSummary && upcomingReservasi.length === 0" class="bg-gray-50/80 border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-gray-400">
+          <svg class="w-6 h-6 animate-spin text-amber-500" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"/></svg>
+          <span class="text-xs font-medium">Memuat jadwal reservasi...</span>
+        </div>
+
+        <!-- Upcoming Reservation List -->
+        <div v-else-if="upcomingReservasi.length > 0" class="space-y-2.5">
+          <router-link
+            v-for="item in upcomingReservasi.slice(0, 3)"
+            :key="item.kodeBooking"
+            to="/riwayat-reservasi"
+            class="block rounded-xl p-3.5 border transition-all hover:shadow-xs"
+            :class="item.isToday ? 'bg-emerald-50/60 border-emerald-200 hover:border-emerald-300' : 'bg-gray-50/70 border-gray-100 hover:border-amber-200'"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 space-y-1">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span
+                    v-if="item.isToday"
+                    class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold"
+                  >
+                    Hari Ini
+                  </span>
+                  <span
+                    class="px-2 py-0.5 rounded-md text-[10px] font-bold"
+                    :class="item.isBpjs ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+                  >
+                    {{ item.isBpjs ? 'Kontrol BPJS' : (item.caraBayar || 'UMUM') }}
+                  </span>
+                  <span class="text-[11px] font-mono font-bold text-gray-500">
+                    #{{ item.kodeBooking }}
+                  </span>
+                </div>
+                <p class="text-xs sm:text-sm font-bold text-gray-800 truncate">{{ item.namaPoli }}</p>
+                <p class="text-[11px] text-gray-500 truncate">{{ item.namaDokter }}</p>
+                <p class="text-[11px] font-semibold" :class="item.isToday ? 'text-emerald-700' : 'text-amber-700'">
+                  {{ formatJadwalDisplay(item.TANGGALKUNJUNGAN, item.ESTIMASI_PELAYANAN || item.JAM_PRAKTEK) }}
+                </p>
+              </div>
+              <div class="px-2.5 py-1.5 rounded-xl bg-white border border-gray-200/80 text-center shrink-0 min-w-[54px]">
+                <span class="block text-[9px] font-semibold text-gray-400 uppercase">No.</span>
+                <span class="text-sm font-black text-gray-800">{{ item.NOMOR_ANTRIAN || '-' }}</span>
+              </div>
+            </div>
+          </router-link>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else class="bg-gray-50/80 border border-gray-100 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2">
           <div class="w-10 h-10 rounded-full bg-gray-200/60 flex items-center justify-center text-gray-400">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
             </svg>
           </div>
           <p class="text-gray-600 font-semibold text-xs sm:text-sm">Belum ada jadwal terdaftar</p>
-          <p class="text-gray-400 text-[11px]">Jadwal kontrol dokter Anda akan ditampilkan di sini</p>
+          <p class="text-gray-400 text-[11px]">
+            <template v-if="allReservasi.length > 0">
+              Terdapat {{ allReservasi.length }} riwayat kunjungan sebelumnya di halaman Reservasi.
+            </template>
+            <template v-else>
+              Jadwal kontrol dokter Anda akan ditampilkan di sini
+            </template>
+          </p>
         </div>
       </div>
     </div>
@@ -211,16 +356,140 @@
 </template>
 
 <script setup>
-import { computed, h, onMounted } from 'vue'
+import { ref, computed, h, onMounted, onUnmounted, watch } from 'vue'
+import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
+import {
+  mergeAndSortReservasi,
+  formatJadwalDisplay,
+  formatJamEstimasi,
+  getFarmasiStatusMeta,
+  getLoketLabel
+} from '../utils/reservasi'
 
+const DASHBOARD_POLL_MS = 30000
 const authStore = useAuthStore()
 
+const loadingSummary = ref(false)
+const antrianFarmasi = ref(null)
+const farmasiWaitingMsg = ref('')
+const reservasiList = ref([])
+const bpjsKontrol = ref(null)
+let dashboardPollTimer = null
+
+const farmasiStatusMeta = computed(() => getFarmasiStatusMeta(antrianFarmasi.value?.status))
+const allReservasi = computed(() => mergeAndSortReservasi(reservasiList.value, bpjsKontrol.value))
+const todayPoliQueues = computed(() => allReservasi.value.filter((item) => item.isToday))
+const upcomingReservasi = computed(() =>
+  allReservasi.value.filter((item) => item.isToday || !item.isExpired)
+)
+
+async function fetchDashboardSummary(showLoading = true) {
+  if (!authStore.isAuthenticated) return
+  const norm = authStore.userNorm || authStore.userName
+  if (showLoading) loadingSummary.value = true
+
+  const [farmasiRes, reservasiRes, bpjsRes] = await Promise.allSettled([
+    norm ? api.get('/publik/antrian-farmasi', { params: { norm } }) : Promise.resolve(null),
+    api.get('/daftar-umum/list-reservasi'),
+    api.get('/resume-medis/kontrol-bpjs')
+  ])
+
+  if (farmasiRes.status === 'fulfilled' && farmasiRes.value?.data) {
+    const res = farmasiRes.value.data
+    const isOk = String(res.code) === '200'
+    if (isOk && res.data && res.data.loket && res.data.nomor) {
+      antrianFarmasi.value = res.data
+      farmasiWaitingMsg.value = ''
+    } else {
+      antrianFarmasi.value = null
+      farmasiWaitingMsg.value = isOk && res.message ? res.message : ''
+    }
+  } else if (showLoading) {
+    antrianFarmasi.value = null
+    farmasiWaitingMsg.value = ''
+  }
+
+  if (
+    reservasiRes.status === 'fulfilled' &&
+    String(reservasiRes.value?.data?.code) === '200' &&
+    Array.isArray(reservasiRes.value.data.data)
+  ) {
+    reservasiList.value = reservasiRes.value.data.data
+  } else if (showLoading) {
+    reservasiList.value = []
+  }
+
+  if (bpjsRes.status === 'fulfilled' && bpjsRes.value?.data) {
+    const code = bpjsRes.value.data.code
+    const data = bpjsRes.value.data.data
+    const tidakAdaData =
+      String(code) !== '200' ||
+      data === null ||
+      data === undefined ||
+      (Array.isArray(data) && data.length === 0) ||
+      (typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length === 0)
+    bpjsKontrol.value = !tidakAdaData ? data : null
+  } else if (showLoading) {
+    bpjsKontrol.value = null
+  }
+
+  if (showLoading) loadingSummary.value = false
+}
+
+function stopDashboardPolling() {
+  if (dashboardPollTimer) {
+    clearInterval(dashboardPollTimer)
+    dashboardPollTimer = null
+  }
+}
+
+function startDashboardPolling() {
+  stopDashboardPolling()
+  if (!authStore.isAuthenticated) return
+  dashboardPollTimer = setInterval(() => {
+    if (authStore.isAuthenticated && document.visibilityState === 'visible') {
+      fetchDashboardSummary(false)
+    }
+  }, DASHBOARD_POLL_MS)
+}
+
+function onDashboardVisibilityChange() {
+  if (authStore.isAuthenticated && document.visibilityState === 'visible') {
+    fetchDashboardSummary(false)
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('visibilitychange', onDashboardVisibilityChange)
   if (authStore.isAuthenticated) {
     authStore.fetchProfile()
+    fetchDashboardSummary(true)
+    startDashboardPolling()
   }
 })
+
+onUnmounted(() => {
+  stopDashboardPolling()
+  document.removeEventListener('visibilitychange', onDashboardVisibilityChange)
+})
+
+watch(
+  () => authStore.isAuthenticated,
+  (loggedIn) => {
+    if (loggedIn) {
+      authStore.fetchProfile()
+      fetchDashboardSummary(true)
+      startDashboardPolling()
+    } else {
+      stopDashboardPolling()
+      antrianFarmasi.value = null
+      farmasiWaitingMsg.value = ''
+      reservasiList.value = []
+      bpjsKontrol.value = null
+    }
+  }
+)
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
@@ -265,8 +534,8 @@ const publicMenus = [
   },
   {
     to: '/antrian-farmasi',
-    label: 'Antrian Farmasi',
-    description: 'Cek Antrian Obat',
+    label: 'Antrean Apotek',
+    description: 'Cek Antrean Obat',
     bgClass: 'bg-teal-50 text-teal-600',
     iconClass: 'text-teal-600',
     iconComponent: createIcon(['M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572'])
@@ -309,8 +578,8 @@ const allMenus = [
   },
   {
     to: '/antrian-farmasi',
-    label: 'Farmasi',
-    description: 'Antrian Obat',
+    label: 'Antrean Apotek',
+    description: 'Antrean Obat',
     bgClass: 'bg-blue-50 text-blue-600',
     iconClass: 'text-blue-600',
     iconComponent: createIcon(['M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572'])

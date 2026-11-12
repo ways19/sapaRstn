@@ -728,7 +728,7 @@ async function fetchReservasi() {
   loading.value = true
   try {
     const response = await api.get('/daftar-umum/list-reservasi')
-    if (response.data?.code === '200' && Array.isArray(response.data.data)) {
+    if (String(response.data?.code) === '200' && Array.isArray(response.data.data)) {
       reservasiList.value = response.data.data
     } else {
       reservasiList.value = []
@@ -750,13 +750,13 @@ async function fetchKontrolBpjs() {
     const data = response.data?.data
 
     const tidakAdaData =
-      code !== '200' ||
+      String(code) !== '200' ||
       data === null ||
       data === undefined ||
       (Array.isArray(data) && data.length === 0) ||
       (typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length === 0)
 
-    if (code === '200' && !tidakAdaData) {
+    if (String(code) === '200' && !tidakAdaData) {
       bpjsKontrol.value = data
     } else {
       bpjsKontrol.value = null
@@ -962,15 +962,25 @@ const sortedReservasiList = computed(() => {
   const items = []
   const seenCodes = new Set()
 
-  // 1. Masukkan data BPJS Kontrol jika ada
-  if (bpjsKontrol.value && bpjsKontrol.value.ID) {
-    const b = bpjsKontrol.value
+  // 1. Masukkan data BPJS Kontrol jika ada (mendukung bentuk object tunggal maupun array)
+  const bpjsEntries = Array.isArray(bpjsKontrol.value)
+    ? bpjsKontrol.value
+    : bpjsKontrol.value && typeof bpjsKontrol.value === 'object' && Object.keys(bpjsKontrol.value).length > 0
+      ? [bpjsKontrol.value]
+      : []
+
+  for (const b of bpjsEntries) {
+    if (!b || typeof b !== 'object' || Object.keys(b).length === 0) continue
+    const code = String(b.ID || b.kodeBooking || b.NO_REF_BPJS || 'BPJS-KONTROL')
+    if (seenCodes.has(code)) continue
+    seenCodes.add(code)
+
     const bpjsItem = {
       isBpjs: true,
-      kodeBooking: String(b.ID),
-      ID: b.ID,
+      kodeBooking: code,
+      ID: b.ID || code,
       NOMOR_ANTRIAN: b.NOMOR_ANTRIAN || '01',
-      namaPoli: b.poli || 'Poliklinik Rawat Jalan',
+      namaPoli: b.poli || b.namaPoli || 'Poliklinik Rawat Jalan',
       namaDokter: b.namaDokter || '-',
       TANGGALKUNJUNGAN: b.TANGGALKUNJUNGAN || today,
       JAM_PRAKTEK: b.ESTIMASI_PELAYANAN || '09:00 - 12:00',
@@ -980,7 +990,6 @@ const sortedReservasiList = computed(() => {
       raw: b
     }
     items.push(bpjsItem)
-    seenCodes.add(String(b.ID))
   }
 
   // 2. Masukkan data reservasi umum

@@ -147,8 +147,8 @@
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572"/></svg>
         </div>
         <div class="flex-1">
-          <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">Status Antrian Farmasi</p>
-          <p class="text-xs text-gray-400">Pantau penyiapan resep obat Anda di instalasi farmasi</p>
+          <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">Status Antrean Apotek</p>
+          <p class="text-xs text-gray-400">Pantau penyiapan resep obat Anda di apotek RSUD</p>
         </div>
         <svg class="w-4 h-4 text-gray-300 group-hover:text-emerald-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </router-link>

@@ -65,7 +65,7 @@ const routes = [
         path: 'antrian-farmasi',
         name: 'AntrianFarmasi',
         component: () => import('../views/AntrianFarmasiView.vue'),
-        meta: { title: 'Antrian Farmasi', requiresAuth: false }
+        meta: { title: 'Antrean Apotek', requiresAuth: false }
       },
       {
         path: 'hasil-radiologi',

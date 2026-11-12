@@ -148,7 +148,7 @@ const menuItems = [
   },
   {
     to: '/antrian-farmasi',
-    label: 'Antrian Farmasi',
+    label: 'Antrean Apotek',
     iconComponent: createIcon(['M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572'])
   },
   {
