@@ -20,6 +20,26 @@ dev-dist/
 .env.*
 !.env.example
 
+# Unit Tests, Testing Reports, & Test Scripts
+tests/
+test/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+vitest.config.js
+vitest.config.ts
+.vitest-cache/
+coverage/
+test_*.php
+test_*.html
+test_*.js
+TESTING-REPORT.md
+LAPORAN-TESTING-*.html
+
+# Local development rules (internal notes, do not push to repository)
+DEVELOPMENT_RULES.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

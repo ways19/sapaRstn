@@ -83,12 +83,10 @@
           </div>
         </div>
 
-        <!-- Article Body -->
-        <!-- TODO: konfirmasi ke mentor apakah field isi berupa HTML tersanitasi atau plain text -->
-        <!-- Saat ini diasumsikan HTML tersanitasi dari backend -->
+        <!-- Article Body tersanitasi aman dari XSS -->
         <div
           class="article-body"
-          v-html="artikel.isi || 'Belum ada konten'"
+          v-html="sanitizedIsi"
         ></div>
 
         <!-- Banner: Diterbitkan oleh Tim Medis -->
@@ -130,6 +128,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import DOMPurify from 'dompurify'
 import api from '../services/api'
 import { edukasiImgUrl, parseTags, formatTglIndo, getTagColorClass } from '../utils/edukasi'
 
@@ -142,6 +141,16 @@ const artikel = ref(null)
 
 // URL gambar yang sudah di-resolve
 const imgUrl = computed(() => artikel.value ? edukasiImgUrl(artikel.value.gambar) : '')
+
+// Sanitasi isi artikel HTML dengan DOMPurify untuk perlindungan XSS
+const sanitizedIsi = computed(() => {
+  const content = artikel.value?.isi
+  if (!content) return 'Belum ada konten'
+  return DOMPurify.sanitize(content, {
+    USE_PROFILES: { html: true },
+    ADD_ATTR: ['target', 'rel']
+  })
+})
 
 // Counter: nilai asli dari API + optimistic +1 jika panggilan counter sukses
 const counterAsli = ref(0)

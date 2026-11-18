@@ -98,6 +98,13 @@ const routes = [
         meta: { title: 'Preview Dokumen', requiresAuth: true }
       },
       {
+        path: 'e-consent',
+        alias: 'general-consent',
+        name: 'EConsent',
+        component: () => import('../views/GeneralConsentView.vue'),
+        meta: { title: 'e-Consent', requiresAuth: true }
+      },
+      {
         path: 'profil',
         name: 'Profile',
         component: () => import('../views/ProfileView.vue'),
@@ -112,6 +119,14 @@ const routes = [
     ]
   },
 
+  // Halaman Publik Verifikasi TTE Dokumen (QR Code Scan - Universal Dokumen Medis RSUD)
+  {
+    path: '/verify/:uuid',
+    name: 'VerifyDocument',
+    component: () => import('../views/VerifyDocumentView.vue'),
+    meta: { title: 'Verifikasi Dokumen TTE - RSUD R.A.A. Tjokronegoro', requiresAuth: false }
+  },
+
   // 404
   {
     path: '/:pathMatch(.*)*',
@@ -122,6 +137,12 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+router.afterEach((to) => {
+  if (to.meta?.title) {
+    document.title = to.meta.title
+  }
 })
 
 // Navigation guard

@@ -4,7 +4,75 @@ Aplikasi Portal Layanan Pasien Digital Resmi **RSUD R.A.A. Tjokronegoro Purworej
 
 ---
 
-## 🚀 Fitur Versi 1.2.0-20261109 *(Versi Terbaru)*
+## 🚀 Fitur Versi 1.2.2-20261118 *(Versi Terbaru)*
+
+Pembaruan versi **1.2.2-20261118** menghadirkan pembaruan estetika antarmuka dashboard utama dengan ikon kustom modern (gaya squircle 4x3), penguatan arsitektur & keamanan integrasi modul **e-Consent (Persetujuan Umum Digital)**, perlindungan berlapis (*Defense in Depth*) terhadap serangan XSS dan pencurian data sesi, serta sanitasi konten dinamis:
+
+### 1. 🎨 Redesain Modern 12 Ikon Menu Dashboard (Grid 4 × 3 Squircle Style)
+- **Desain Squircle Pebble Organik**: Seluruh 12 kartu menu pada dashboard utama kini menggunakan bentuk squircle modern (`rounded-[22px]`) dengan warna latar pastel lembut (*soft pastel tint*) dan garis tepi aksen (*accent border*) yang presisi dan elegan.
+- **Ikon Kustom High-Precision SVG**:
+  1. **Daftar Online**: Lembar dokumen dengan badge lingkaran tambah (`+`) di sudut kanan bawah.
+  2. **Jadwal Dokter**: Kalender binder rings dengan badge lingkaran jam analog.
+  3. **Reservasi**: Papan berkas (*clipboard*) dengan centang dan badge lingkaran centang.
+  4. **e-Consent**: Lambang perisai pelindung dengan badge lingkaran centang (`✓`).
+  5. **Antrean Apotek**: Botol obat sirup dengan penutup dan lambang palang farmasi.
+  6. **Radiologi**: Frame bujur sangkar rontgen dengan 8 garis pancaran radiasi sinar-X.
+  7. **Laboratorium**: Tabung reaksi kimia *Erlenmeyer* dengan batas cairan & gelembung.
+  8. **Resume Medis**: Map berkas (*medical folder*) dengan lambang palang kesehatan.
+  9. **Tagihan**: Bukti kuitansi/nota berigi dengan koin badge berlabel **Rp**.
+  10. **Info Kamar**: Ranjang rawat inap lengkap dengan bantal & tiang infus.
+  11. **Edukasi**: Buku terbuka dua halaman dengan pita pembatas bacaan di atas.
+  12. **Profile**: Ikon profil avatar pengguna modern yang terhubung langsung ke manajemen akun & data pasien.
+- **Tata Letak Simetris**: Grid 4 kolom konsisten (`grid-cols-4`) dengan jarak proporsional sehingga selalu menghasilkan 3 baris simetris di ponsel maupun desktop.
+
+### 2. ✍️ Peningkatan Arsitektur & Keamanan Modul e-Consent (Persetujuan Umum Digital)
+- **Normalisasi Database & Penghapusan Kolom Redundan**:
+  - Migrasi dan pembersihan 9 kolom redundan pada tabel `medicalrecord.rstn_general_consent`:
+    - Pemetaan `PETUGAS_NIP` ke kode pengguna `aplikasi.pengguna.ID` (`PETUGAS_ID`), sehingga identitas nama dan NIP resmi petugas admisi terambil dinamis via relasi langsung.
+    - Penghapusan kolom penandatangan duplikat (`PENANDATANGAN_NAMA`, `PENANDATANGAN_HUBUNGAN`, `PENANDATANGAN_ALAMAT`, `PENANDATANGAN_TELP`) karena telah terhubung dinamis ke master data pasien (`master.pasien`) atau penanggung jawab pendaftaran (`pendaftaran.penanggung_jawab_pasien`).
+    - Penghapusan kolom penyimpanan ganda (`DOCUMENT_STORAGE_ID`, `DOCUMENT_PATH`, `REVISION_FROM`) yang kini terpusat dan terkelola langsung di tabel `document-storage.document` berbasis relasi `DOC_UUID`.
+- **Pengamanan Sesi & Token Autentikasi e-Consent**:
+  - Token JWT pasien (`sapa_token`) dan profil pasien (`sapa_user`) yang digunakan saat otentikasi e-Consent kini dienkripsi secara aman menggunakan AES-256 Vault di sisi klien (`secureStorage.js`) untuk mencegah pencurian token melalui inspeksi fisik/DevTools.
+  - Pengecekan otomatis masa aktif token (`isJwtExpired`) dan mekanisme pembersihan sesi (*auto-clear*) saat token kedaluwarsa atau terjadi pencabutan akses oleh rumah sakit.
+  - Penguatan proteksi **IDOR (*Insecure Direct Object References*)** pada API e-Consent, menjamin pasien hanya dapat melihat dan menandatangani dokumen persetujuan yang cocok dengan No. RM miliknya.
+- **Sinkronisasi Alur Hybrid Push e-Consent**:
+  - Penyelarasan alur kerja antara modul petugas admisi SIMGoS dan modul SAPA RSTN di ponsel pasien: saat petugas mengirim permintaan tanda tangan, pasien dapat seketika meninjau dokumen, klausul pelepasan informasi, dan membubuhkan TTE digital secara aman.
+
+### 3. 🛡️ Penguatan Keamanan Berlapis (Defense in Depth) & Sanitasi XSS
+- **Sanitasi HTML dengan DOMPurify**: Pemasangan pustaka `dompurify` pada modul tampilan konten dinamis (khususnya *EdukasiDetailView.vue*) untuk mencegah serangan Cross-Site Scripting (XSS).
+- **Derivasi Kunci Multi-Faktor di `secureStorage.js`**: Kunci enkripsi AES penyimpanan lokal klien kini dibentuk secara dinamis melalui kombinasi origin domain, bahasa sistem, dan platform klien yang di-hash dengan SHA-256 (mempersulit reverse-engineering atau analisis statis).
+- **Kompatibilitas Mundur (Backward Compatibility)**: Mekanisme dekripsi berjenjang otomatis mengenali dan mendekripsi data sesi versi legacy secara transparan tanpa memutus sesi pasien yang sedang aktif.
+- **Content Security Policy (CSP)**: Penambahan deklarasi kebijakan keamanan CSP pada `index.html` untuk membatasi sumber eksekusi skrip liar di browser.
+
+### 4. 🧪 Kualitas Kode & Pengujian Otomatis
+- **100% Unit Test Passed**: Sebanyak **146 pengujian otomatis** lulus sempurna pada suite Vitest (`npm run test:run`).
+- **Optimalisasi PWA Build**: Kompilasi produksi Vite selesai di bawah 1 detik dengan Service Worker PWA diperbarui.
+
+---
+
+## 📦 Fitur Versi 1.2.1-20261112
+
+Pembaruan versi **1.2.1-20261112** (commit `6bc3547` & `23b3e1c`) berfokus pada resolusi kendala pemuatan gambar edukasi, penambahan indikator versi dinamis pada antarmuka login, serta peningkatan mekanisme caching Service Worker:
+
+### 1. 🖼️ Perbaikan Gambar Edukasi (Resolusi Mixed Content HTTPS)
+- **Migrasi Domain Gambar ke HTTPS**: Mengalihkan URL dasar gambar edukasi dari IP mentah HTTP (`http://194.169.46.193/...`) ke domain HTTPS resmi (`https://apirstjokro.purworejokab.go.id/...`) agar gambar artikel tidak diblokir browser modern akibat pelanggaran *Mixed Content*.
+- **Otomatisasi Normalisasi Path**: Penambahan utilitas pembersih string `edukasiImgUrl` yang secara cerdas mendeteksi dan mengonversi link gambar absolut maupun relatif dari respons backend.
+
+### 2. 🏷️ Informasi Versi Dinamis Aplikasi di Layar Login
+- **Display Versi Real-time**: Menampilkan label versi aplikasi resmi (`SAPA RSTN v1.2.x`) di bagian footer layar login (`LoginPage.vue`).
+- **Plugin Manifest `version.json`**: Penambahan custom Vite plugin untuk membuat file manifest `version.json` secara otomatis saat proses build, memudahkan pelacakan versi build produksi oleh tim pengembang.
+- **Konstanta Build Global**: Pendefinisian variabel kompilasi global `__APP_VERSION__` dan `__APP_BUILD_ID__` pada `vite.config.js`.
+
+### 3. ⚙️ Peningkatan PWA & Auto-Update Service Worker
+- **Pembaruan Konfigurasi Workbox**: Mengaktifkan `cleanupOutdatedCaches: true`, `skipWaiting: true`, dan `clientsClaim: true` agar aplikasi PWA yang terpasang di perangkat pasien langsung memperbarui aset tanpa harus membersihkan cache secara manual.
+- **Bypass Cache API**: Menerapkan `navigateFallbackDenylist` untuk rute API dan manifest version.
+
+### 4. 🐛 Perbaikan Bug Fungsional
+- Penyempurnaan utilitas reservasi online (`src/utils/reservasi.js`), perbaikan status antrean obat di Instalasi Farmasi (`AntrianFarmasiView.vue`), serta optimasi komponen Dashboard dan Riwayat Reservasi.
+
+---
+
+## 📦 Fitur Versi 1.2.0-20261109
 
 Pembaruan versi 1.2.0-20261109 menghadirkan penyempurnaan besar pada pengalaman pengguna (UX) modul reservasi rawat jalan, integrasi cerdas BPJS Kesehatan Mobile JKN, standarisasi kebijakan operasional pendaftaran 7 hari, serta dukungan Tanda Tangan Elektronik (TTE) pasien:
 

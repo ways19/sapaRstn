@@ -203,7 +203,10 @@
             </span>
           </div>
 
-          <div class="flex items-center justify-between">
+          <div
+            v-if="item.isBpjs || (isExpired(item.TANGGALKUNJUNGAN, item.JAM_PRAKTEK) && !isHariIni(item.TANGGALKUNJUNGAN))"
+            class="flex items-center justify-between"
+          >
             <!-- 1. BPJS dengan Nomor Surat Kontrol Resmi -->
             <template v-if="item.isBpjs && item.NO_REF_BPJS">
               <span class="text-slate-400 font-medium">No. Surat Kontrol:</span>
@@ -219,12 +222,7 @@
                 <span>Terbit & Aktif</span>
               </span>
             </template>
-            <!-- 3. UMUM Aktif / Mendatang -->
-            <template v-else-if="!isExpired(item.TANGGALKUNJUNGAN, item.JAM_PRAKTEK) || isHariIni(item.TANGGALKUNJUNGAN)">
-              <span class="text-slate-400 font-medium">Biaya Registrasi:</span>
-              <span class="font-bold text-emerald-700">Rp 45.000 (Kasir / QRIS)</span>
-            </template>
-            <!-- 4. Selesai / Terlewat -->
+            <!-- 3. Selesai / Terlewat -->
             <template v-else>
               <span class="text-slate-400 font-medium">Status Reservasi:</span>
               <span class="font-semibold text-slate-500">Selesai Pelayanan (Lalu)</span>
@@ -449,10 +447,6 @@
               <div v-if="selectedTicket.isBpjs && selectedTicket.NO_REF_BPJS" class="flex items-center justify-between">
                 <span class="text-gray-500">No. Surat Kontrol:</span>
                 <span class="font-mono font-bold text-emerald-700">{{ selectedTicket.NO_REF_BPJS }}</span>
-              </div>
-              <div v-if="!selectedTicket.isBpjs" class="flex items-center justify-between">
-                <span class="text-gray-500">Biaya Registrasi:</span>
-                <span class="font-bold text-emerald-700">Rp 45.000 (Kasir / QRIS)</span>
               </div>
             </div>
 

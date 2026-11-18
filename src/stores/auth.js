@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '../services/api'
+import { secureStorage } from '../utils/secureStorage'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('sapa_token') || null)
-  const user = ref(JSON.parse(localStorage.getItem('sapa_user') || 'null'))
+  const token = ref(secureStorage.get('sapa_token') || null)
+  const user = ref(secureStorage.get('sapa_user', true) || null)
   const loading = ref(false)
   const error = ref(null)
 
@@ -32,8 +33,9 @@ export const useAuthStore = defineStore('auth', () => {
         const pasienData = data.data.pasien || { NORM, TANGGAL_LAHIR }
         user.value = { ...pasienData, NORM }
 
-        localStorage.setItem('sapa_token', data.data.access_token)
-        localStorage.setItem('sapa_user', JSON.stringify(user.value))
+        // Simpan token dan data user secara terenkripsi AES
+        secureStorage.set('sapa_token', data.data.access_token)
+        secureStorage.set('sapa_user', user.value, true)
 
         return { success: true }
       } else {
@@ -50,11 +52,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function fetchProfile() {
-    const savedUser = localStorage.getItem('sapa_user')
+    const savedUser = secureStorage.get('sapa_user', true)
     if (savedUser) {
-      try {
-        user.value = JSON.parse(savedUser)
-      } catch (e) {}
+      user.value = savedUser
     }
     return user.value
   }
@@ -62,8 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     token.value = null
     user.value = null
-    localStorage.removeItem('sapa_token')
-    localStorage.removeItem('sapa_user')
+    secureStorage.clearAuth()
   }
 
   return {

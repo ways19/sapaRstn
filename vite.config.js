@@ -96,11 +96,17 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'http://194.169.46.193',
+        target: 'http://127.0.0.1',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/gos2_plus/web/rsudapi')
+      },
+      '/rstn-api': {
+        target: 'http://127.0.0.1:8088',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/rstn-api/, '/api')
       }
     }
   }

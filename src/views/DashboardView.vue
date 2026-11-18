@@ -77,10 +77,9 @@
         </div>
       </div>
 
-      <!-- Menu Grid: Frameless modern icon-first layout -->
+      <!-- Menu Grid: Frameless modern icon-first layout (4 kolom konsisten 12 menu) -->
       <div
-        class="grid gap-y-4 gap-x-2 sm:gap-4 md:gap-5 py-1"
-        :class="authStore.isAuthenticated ? 'grid-cols-4 sm:grid-cols-4 md:grid-cols-8' : 'grid-cols-4 sm:grid-cols-4'"
+        class="grid grid-cols-4 gap-y-5 gap-x-2 sm:gap-y-6 sm:gap-x-4 py-2"
       >
         <router-link
           v-for="menu in displayedMenus"
@@ -88,9 +87,9 @@
           :to="menu.to"
           class="group flex flex-col items-center text-center justify-start gap-2 py-1 px-1 active:scale-95 transition-transform"
         >
-          <!-- Icon Tile -->
+          <!-- Icon Tile (Squircle Modern) -->
           <div
-            class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:shadow-md shadow-sm border border-black/5"
+            class="w-[58px] h-[58px] sm:w-[66px] sm:h-[66px] rounded-[22px] flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:shadow-md shadow-xs"
             :class="menu.bgClass"
           >
             <component
@@ -102,7 +101,7 @@
 
           <!-- Menu Label -->
           <span
-            class="text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-emerald-700 transition-colors leading-tight text-center max-w-[80px] sm:max-w-[100px]"
+            class="text-[11px] sm:text-xs font-medium text-slate-800 group-hover:text-emerald-700 transition-colors leading-tight text-center max-w-[80px]"
           >
             {{ menu.label }}
           </span>
@@ -499,150 +498,279 @@ const greeting = computed(() => {
   return '🌙 Selamat Malam'
 })
 
-function createIcon(paths) {
+// Helper pembentuk komponen SVG kustom presisi tinggi
+function createSvgIcon(elements, customViewBox = '0 0 24 24') {
   return {
     render() {
       return h('svg', {
-        viewBox: '0 0 24 24',
+        viewBox: customViewBox,
         fill: 'none',
         stroke: 'currentColor',
-        'stroke-width': '2',
+        'stroke-width': '1.8',
         'stroke-linecap': 'round',
-        'stroke-linejoin': 'round'
-      }, paths.map(d => h('path', { d })))
+        'stroke-linejoin': 'round',
+        class: 'w-6 h-6 sm:w-7 sm:h-7'
+      }, elements)
     }
   }
 }
 
-// Public Menus (Accessible without login)
-const publicMenus = [
-  {
-    to: '/jadwal-dokter',
-    label: 'Jadwal Dokter',
-    description: 'Praktik Dokter Spesialis & Kuota',
-    bgClass: 'bg-cyan-50 text-cyan-600',
-    iconClass: 'text-cyan-600',
-    iconComponent: createIcon(['M3 4h18v18H3z', 'M16 2v4', 'M8 2v4', 'M3 10h18'])
-  },
-  {
-    to: '/info-tempat-tidur',
-    label: 'Tempat Tidur',
-    description: 'Ketersediaan Kamar Inap',
-    bgClass: 'bg-amber-50 text-amber-600',
-    iconClass: 'text-amber-600',
-    iconComponent: createIcon(['M2 4v16', 'M22 4v16', 'M2 8h20', 'M2 16h20'])
-  },
-  {
-    to: '/antrian-farmasi',
-    label: 'Antrean Apotek',
-    description: 'Cek Antrean Obat',
-    bgClass: 'bg-teal-50 text-teal-600',
-    iconClass: 'text-teal-600',
-    iconComponent: createIcon(['M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572'])
-  },
-  {
-    to: '/edukasi',
-    label: 'Edukasi',
-    description: 'Informasi & Tips Kesehatan',
-    bgClass: 'bg-indigo-50 text-indigo-600',
-    iconClass: 'text-indigo-600',
-    iconComponent: createIcon(['M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z', 'M6 6h10', 'M6 10h10'])
-  }
-]
+// 1. Daftar Online: Dokumen dengan badge lingkaran tambah (+) di sudut kanan bawah
+const iconDaftarOnline = createSvgIcon([
+  h('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h5' }),
+  h('path', { d: 'M14 2v5h5' }),
+  h('path', { d: 'M7 9h7' }),
+  h('path', { d: 'M7 13h4' }),
+  h('circle', { cx: '17', cy: '17', r: '4', stroke: 'currentColor', 'stroke-width': '1.8' }),
+  h('path', { d: 'M17 15v4' }),
+  h('path', { d: 'M15 17h4' })
+])
 
-// All Menus (Shown when logged in)
+// 2. Jadwal Dokter: Kalender dengan binder rings dan badge lingkaran jam
+const iconJadwalDokter = createSvgIcon([
+  h('path', { d: 'M8 2v3' }),
+  h('path', { d: 'M16 2v3' }),
+  h('path', { d: 'M20 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7' }),
+  h('path', { d: 'M22 11V6a2 2 0 0 0-2-2' }),
+  h('path', { d: 'M2 9h20' }),
+  h('path', { d: 'M6.5 13h.01' }),
+  h('path', { d: 'M10.5 13h.01' }),
+  h('path', { d: 'M6.5 17h.01' }),
+  h('circle', { cx: '17', cy: '17', r: '4', stroke: 'currentColor', 'stroke-width': '1.8' }),
+  h('path', { d: 'M17 15.2v2l1.5.8' })
+])
+
+// 3. Reservasi: Clipboard berkas dengan centang dan badge lingkaran centang
+const iconReservasi = createSvgIcon([
+  h('path', { d: 'M9 3H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h5' }),
+  h('path', { d: 'M15 3h2a2 2 0 0 1 2 2v6' }),
+  h('rect', { x: '9', y: '2', width: '6', height: '3', rx: '1' }),
+  h('path', { d: 'M8 11.5l2 2 4.5-4.5' }),
+  h('circle', { cx: '17', cy: '17', r: '4', stroke: 'currentColor', 'stroke-width': '1.8' }),
+  h('path', { d: 'M15.5 17l1 1 2-2' })
+])
+
+// 4. e-Consent: Perisai pelindung dengan badge lingkaran centang
+const iconEConsent = createSvgIcon([
+  h('path', { d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' }),
+  h('circle', { cx: '12', cy: '11.5', r: '3.6', stroke: 'currentColor', 'stroke-width': '1.6' }),
+  h('path', { d: 'M10.7 11.5l1 1 1.8-1.8' })
+])
+
+// 5. Antrean Apotek: Botol obat/sirup dengan tutup dan lambang palang farmasi
+const iconAntreanApotek = createSvgIcon([
+  h('rect', { x: '8.5', y: '2', width: '7', height: '2.5', rx: '1' }),
+  h('rect', { x: '5', y: '6.5', width: '14', height: '15', rx: '3.5' }),
+  h('path', { d: 'M12 10.5v6' }),
+  h('path', { d: 'M9 13.5h6' }),
+  h('path', { d: 'M15.5 4.5l3.2 2.2' })
+])
+
+// 6. Radiologi: Kotak frame sinar-X dengan radiasi sinar 8 arah
+const iconRadiologi = createSvgIcon([
+  h('rect', { x: '3', y: '3', width: '18', height: '18', rx: '4.5' }),
+  h('circle', { cx: '12', cy: '12', r: '2.8' }),
+  h('path', { d: 'M12 5.5v2.2' }),
+  h('path', { d: 'M12 16.3v2.2' }),
+  h('path', { d: 'M5.5 12h2.2' }),
+  h('path', { d: 'M16.3 12h2.2' }),
+  h('path', { d: 'M7.5 7.5l1.6 1.6' }),
+  h('path', { d: 'M14.9 14.9l1.6 1.6' }),
+  h('path', { d: 'M7.5 16.5l1.6-1.6' }),
+  h('path', { d: 'M14.9 9.1l1.6-1.6' })
+])
+
+// 7. Laboratorium: Tabung Erlenmeyer reaksi kimia & level cairan
+const iconLaboratorium = createSvgIcon([
+  h('path', { d: 'M9 3h6' }),
+  h('path', { d: 'M10 3v5.5L4.8 18.2A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-2.8L14 8.5V3' }),
+  h('path', { d: 'M7.2 15h9.6' }),
+  h('circle', { cx: '9.8', cy: '17.8', r: '0.8', fill: 'currentColor' }),
+  h('circle', { cx: '14.2', cy: '16.8', r: '0.8', fill: 'currentColor' })
+])
+
+// 8. Resume Medis: Map berkas rekam medis dengan lambang palang kesehatan
+const iconResumeMedis = createSvgIcon([
+  h('path', { d: 'M3 7v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7l-2-2H5a2 2 0 0 0-2 2z' }),
+  h('circle', { cx: '13', cy: '14.5', r: '3.6', stroke: 'currentColor', 'stroke-width': '1.6' }),
+  h('path', { d: 'M13 12.8v3.4' }),
+  h('path', { d: 'M11.3 14.5h3.4' })
+])
+
+// 9. Tagihan: Lembar bukti tagihan/kuitansi berigi dengan koin "Rp"
+const iconTagihan = {
+  render() {
+    return h('svg', {
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
+      'stroke-width': '1.8',
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      class: 'w-6 h-6 sm:w-7 sm:h-7'
+    }, [
+      h('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16l2.5-1.5L9 20l2.5-1.5V13' }),
+      h('path', { d: 'M14 2v5h5' }),
+      h('path', { d: 'M19 7v6' }),
+      h('path', { d: 'M7 8h4' }),
+      h('path', { d: 'M7 12h2' }),
+      h('circle', { cx: '16.5', cy: '16.5', r: '4.5', stroke: 'currentColor', 'stroke-width': '1.8' }),
+      h('text', {
+        x: '16.5',
+        y: '18.1',
+        'text-anchor': 'middle',
+        'font-size': '4.2',
+        'font-family': 'sans-serif',
+        'font-weight': 'bold',
+        fill: 'currentColor',
+        stroke: 'none'
+      }, 'Rp')
+    ])
+  }
+}
+
+// 10. Info Kamar: Tempat tidur rawat inap dengan bantal dan tiang infus
+const iconInfoKamar = createSvgIcon([
+  h('path', { d: 'M2 13v6' }),
+  h('path', { d: 'M18 14v5' }),
+  h('path', { d: 'M2 15h16' }),
+  h('path', { d: 'M5 12.5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1.5H5v-1.5z' }),
+  h('path', { d: 'M10 13v-1a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2' }),
+  h('path', { d: 'M21 5v14' }),
+  h('path', { d: 'M19.5 5h3' }),
+  h('rect', { x: '20', y: '7', width: '2', height: '2.5', rx: '0.5' })
+])
+
+// 11. Edukasi: Buku terbuka dengan pita pembatas bacaan
+const iconEdukasi = createSvgIcon([
+  h('path', { d: 'M12 20V7' }),
+  h('path', { d: 'M12 20c-2.5-1.5-6-1.5-9 0V6c3-1.5 6.5-1.5 9 0' }),
+  h('path', { d: 'M12 20c2.5-1.5 6-1.5 9 0V6c-3-1.5-6.5-1.5-9 0' }),
+  h('path', { d: 'M10.2 3.8l1.8 2 1.8-2' })
+])
+
+// 12. Profil: Ikon profil pengguna / avatar akun pasien
+const iconProfil = createSvgIcon([
+  h('path', { d: 'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' }),
+  h('circle', { cx: '12', cy: '7', r: '4' })
+])
+
+// Ikon Lainnya: Grid 2x2 persegi membulat (opsional / cadangan)
+const iconLainnya = {
+  render() {
+    return h('svg', {
+      viewBox: '0 0 24 24',
+      fill: 'currentColor',
+      class: 'w-6 h-6 sm:w-7 sm:h-7'
+    }, [
+      h('rect', { x: '4', y: '4', width: '6', height: '6', rx: '2' }),
+      h('rect', { x: '14', y: '4', width: '6', height: '6', rx: '2' }),
+      h('rect', { x: '4', y: '14', width: '6', height: '6', rx: '2' }),
+      h('rect', { x: '14', y: '14', width: '6', height: '6', rx: '2' })
+    ])
+  }
+}
+
+// 12 Menu Utama Sesuai Desain Grid Modern SAPA RSTN
 const allMenus = [
   {
     to: '/daftar-online',
     label: 'Daftar Online',
     description: 'Poli Rawat Jalan',
-    bgClass: 'bg-emerald-50 text-emerald-600',
+    bgClass: 'bg-emerald-500/10 border border-emerald-300/50 text-emerald-600',
     iconClass: 'text-emerald-600',
-    iconComponent: createIcon(['M12 5v14', 'M5 12h14'])
+    iconComponent: iconDaftarOnline
   },
   {
     to: '/jadwal-dokter',
     label: 'Jadwal Dokter',
-    description: 'Praktik Dokter',
-    bgClass: 'bg-cyan-50 text-cyan-600',
-    iconClass: 'text-cyan-600',
-    iconComponent: createIcon(['M3 4h18v18H3z', 'M16 2v4', 'M8 2v4', 'M3 10h18'])
+    description: 'Praktik Dokter Spesialis & Kuota',
+    bgClass: 'bg-sky-500/10 border border-sky-300/50 text-sky-600',
+    iconClass: 'text-sky-600',
+    iconComponent: iconJadwalDokter
   },
   {
     to: '/riwayat-reservasi',
     label: 'Reservasi',
     description: 'Histori & Tiket',
-    bgClass: 'bg-teal-50 text-teal-600',
+    bgClass: 'bg-emerald-500/10 border border-emerald-300/50 text-emerald-600',
+    iconClass: 'text-emerald-600',
+    iconComponent: iconReservasi
+  },
+  {
+    to: '/e-consent',
+    label: 'e-Consent',
+    description: 'Persetujuan Medis',
+    bgClass: 'bg-teal-500/10 border border-teal-300/50 text-teal-600',
     iconClass: 'text-teal-600',
-    iconComponent: createIcon(['M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2', 'M12 11h4', 'M12 16h4', 'M8 11h.01', 'M8 16h.01'])
+    iconComponent: iconEConsent
   },
   {
     to: '/antrian-farmasi',
     label: 'Antrean Apotek',
     description: 'Antrean Obat',
-    bgClass: 'bg-blue-50 text-blue-600',
+    bgClass: 'bg-blue-500/10 border border-blue-300/50 text-blue-600',
     iconClass: 'text-blue-600',
-    iconComponent: createIcon(['M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572'])
+    iconComponent: iconAntreanApotek
   },
   {
     to: '/hasil-radiologi',
     label: 'Radiologi',
     description: 'Hasil Rontgen & USG',
-    bgClass: 'bg-violet-50 text-violet-600',
-    iconClass: 'text-violet-600',
-    iconComponent: createIcon(['M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z', 'M2 12h3', 'M19 12h3', 'M12 2v3', 'M12 19v3'])
+    bgClass: 'bg-purple-500/10 border border-purple-300/50 text-purple-600',
+    iconClass: 'text-purple-600',
+    iconComponent: iconRadiologi
   },
   {
     to: '/hasil-laboratorium',
     label: 'Laboratorium',
     description: 'Hasil Tes & Darah',
-    bgClass: 'bg-teal-50 text-teal-600',
+    bgClass: 'bg-teal-500/10 border border-teal-300/50 text-teal-600',
     iconClass: 'text-teal-600',
-    iconComponent: createIcon(['M10 2v7.31L4.68 18.2A2 2 0 0 0 6.4 21h11.2a2 2 0 0 0 1.72-2.8L14 9.31V2', 'M8.5 2h7', 'M7 16h10'])
+    iconComponent: iconLaboratorium
   },
   {
     to: '/resume-medis',
     label: 'Resume Medis',
     description: 'Rawat Inap',
-    bgClass: 'bg-sky-50 text-sky-600',
+    bgClass: 'bg-sky-500/10 border border-sky-300/50 text-sky-600',
     iconClass: 'text-sky-600',
-    iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M16 13H8', 'M16 17H8'])
+    iconComponent: iconResumeMedis
   },
   {
     to: '/tagihan-umum',
     label: 'Tagihan',
     description: 'Tagihan Pasien',
-    bgClass: 'bg-orange-50 text-orange-600',
-    iconClass: 'text-orange-600',
-    iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M9 15h6', 'M12 12v6'])
+    bgClass: 'bg-amber-500/10 border border-amber-300/50 text-amber-600',
+    iconClass: 'text-amber-600',
+    iconComponent: iconTagihan
   },
   {
     to: '/info-tempat-tidur',
     label: 'Info Kamar',
-    description: 'Tempat Tidur',
-    bgClass: 'bg-amber-50 text-amber-600',
-    iconClass: 'text-amber-600',
-    iconComponent: createIcon(['M2 4v16', 'M22 4v16', 'M2 8h20', 'M2 16h20'])
+    description: 'Ketersediaan Kamar Inap',
+    bgClass: 'bg-teal-500/10 border border-teal-300/50 text-teal-600',
+    iconClass: 'text-teal-600',
+    iconComponent: iconInfoKamar
   },
   {
     to: '/edukasi',
     label: 'Edukasi',
-    description: 'Info Kesehatan',
-    bgClass: 'bg-indigo-50 text-indigo-600',
+    description: 'Informasi & Tips Kesehatan',
+    bgClass: 'bg-indigo-500/10 border border-indigo-300/50 text-indigo-600',
     iconClass: 'text-indigo-600',
-    iconComponent: createIcon(['M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z', 'M6 6h10', 'M6 10h10'])
+    iconComponent: iconEdukasi
   },
   {
     to: '/profil',
-    label: 'Profil Saya',
+    label: 'Profile',
     description: 'Data Pasien & Akun',
-    bgClass: 'bg-rose-50 text-rose-600',
-    iconClass: 'text-rose-600',
-    iconComponent: createIcon(['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'])
+    bgClass: 'bg-teal-500/10 border border-teal-300/50 text-teal-600',
+    iconClass: 'text-teal-600',
+    iconComponent: iconProfil
   }
 ]
 
-const displayedMenus = computed(() => {
-  return authStore.isAuthenticated ? allMenus : publicMenus
-})
+// Seluruh 12 menu selalu ditampilkan agar tata letak 4 kolom (3 baris) selalu rapi & simetris
+const displayedMenus = computed(() => allMenus)
 </script>

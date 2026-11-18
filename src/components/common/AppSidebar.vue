@@ -1,17 +1,18 @@
 <template>
   <aside
+    v-if="route.path !== '/login'"
     class="fixed top-0 left-0 h-screen flex flex-col bg-white border-r border-gray-100 z-50"
     :class="isMobile ? 'w-72 shadow-2xl' : 'w-64'"
   >
     <!-- Logo -->
     <div class="flex items-center justify-between px-5 h-16 border-b border-gray-100 shrink-0">
-      <div class="flex items-center gap-3">
+      <router-link to="/" class="flex items-center gap-3">
         <img src="/logo.png" alt="Logo SAPA RSTN" class="w-10 h-10 object-contain rounded-xl shrink-0" />
         <div>
           <h2 class="text-base font-bold text-gray-800 leading-tight">SAPA RSTN</h2>
           <p class="text-[10px] text-gray-400 tracking-wide">Portal Pasien Umum</p>
         </div>
-      </div>
+      </router-link>
       <!-- Close button for mobile -->
       <button
         v-if="isMobile"
@@ -26,9 +27,11 @@
 
     <!-- Navigation -->
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-      <p class="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Menu Utama</p>
+      <p class="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+        {{ authStore.isAuthenticated ? 'Menu Utama' : 'Layanan Publik' }}
+      </p>
       <router-link
-        v-for="item in menuItems"
+        v-for="item in visibleMenuItems"
         :key="item.to"
         :to="item.to"
         @click="isMobile && $emit('close')"
@@ -81,7 +84,7 @@
 </template>
 
 <script setup>
-import { h } from 'vue'
+import { computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 
@@ -115,68 +118,93 @@ function createIcon(paths) {
   }
 }
 
-const menuItems = [
+const allMenuItems = [
   {
     to: '/',
     label: 'Dashboard',
-    iconComponent: createIcon(['M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', 'M9 22V12h6v10'])
+    iconComponent: createIcon(['M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', 'M9 22V12h6v10']),
+    public: true
   },
   {
     to: '/jadwal-dokter',
     label: 'Jadwal Dokter',
-    iconComponent: createIcon(['M3 4h18v18H3z', 'M16 2v4', 'M8 2v4', 'M3 10h18'])
+    iconComponent: createIcon(['M3 4h18v18H3z', 'M16 2v4', 'M8 2v4', 'M3 10h18']),
+    public: true
   },
   {
     to: '/info-tempat-tidur',
     label: 'Info Tempat Tidur',
-    iconComponent: createIcon(['M2 4v16', 'M2 8h20', 'M22 4v16', 'M6 8v8', 'M18 8v8', 'M2 16h20'])
+    iconComponent: createIcon(['M2 4v16', 'M2 8h20', 'M22 4v16', 'M6 8v8', 'M18 8v8', 'M2 16h20']),
+    public: true
   },
   {
     to: '/edukasi',
     label: 'Edukasi Kesehatan',
-    iconComponent: createIcon(['M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z', 'M6 6h10', 'M6 10h10'])
+    iconComponent: createIcon(['M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z', 'M6 6h10', 'M6 10h10']),
+    public: true
   },
   {
     to: '/daftar-online',
     label: 'Daftar Online',
-    iconComponent: createIcon(['M12 5v14', 'M5 12h14'])
+    iconComponent: createIcon(['M12 5v14', 'M5 12h14']),
+    public: false
   },
   {
     to: '/riwayat-reservasi',
     label: 'Riwayat Reservasi',
-    iconComponent: createIcon(['M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2', 'M12 11h4', 'M12 16h4', 'M8 11h.01', 'M8 16h.01'])
+    iconComponent: createIcon(['M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2', 'M12 11h4', 'M12 16h4', 'M8 11h.01', 'M8 16h.01']),
+    public: false
   },
   {
     to: '/antrian-farmasi',
     label: 'Antrean Apotek',
-    iconComponent: createIcon(['M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572'])
+    iconComponent: createIcon(['M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572']),
+    public: false
   },
   {
     to: '/hasil-radiologi',
     label: 'Hasil Radiologi',
-    iconComponent: createIcon(['M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z', 'M2 12h3', 'M19 12h3', 'M12 2v3', 'M12 19v3'])
+    iconComponent: createIcon(['M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z', 'M2 12h3', 'M19 12h3', 'M12 2v3', 'M12 19v3']),
+    public: false
   },
   {
     to: '/hasil-laboratorium',
     label: 'Hasil Laboratorium',
-    iconComponent: createIcon(['M10 2v7.31L4.68 18.2A2 2 0 0 0 6.4 21h11.2a2 2 0 0 0 1.72-2.8L14 9.31V2', 'M8.5 2h7', 'M7 16h10'])
+    iconComponent: createIcon(['M10 2v7.31L4.68 18.2A2 2 0 0 0 6.4 21h11.2a2 2 0 0 0 1.72-2.8L14 9.31V2', 'M8.5 2h7', 'M7 16h10']),
+    public: false
   },
   {
     to: '/resume-medis',
     label: 'Resume Medis Ranap',
-    iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M16 13H8', 'M16 17H8'])
+    iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M16 13H8', 'M16 17H8']),
+    public: false
   },
   {
     to: '/tagihan-umum',
     label: 'Tagihan Pasien',
-    iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M9 15h6', 'M12 12v6'])
+    iconComponent: createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M9 15h6', 'M12 12v6']),
+    public: false
+  },
+  {
+    to: '/e-consent',
+    label: 'e-Consent',
+    iconComponent: createIcon(['M9 12h6', 'M9 16h6', 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6']),
+    public: false
   },
   {
     to: '/profil',
     label: 'Profil Saya',
-    iconComponent: createIcon(['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'])
+    iconComponent: createIcon(['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z']),
+    public: false
   }
 ]
+
+const visibleMenuItems = computed(() => {
+  if (authStore.isAuthenticated) {
+    return allMenuItems
+  }
+  return allMenuItems.filter(item => item.public)
+})
 
 function handleLogout() {
   authStore.logout()
